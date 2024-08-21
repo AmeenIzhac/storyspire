@@ -1,10 +1,10 @@
 import asyncio
 import openai
-import dotenv
+# import dotenv
 import streamlit as st
 import threading
 
-dotenv.load_dotenv()
+# dotenv.load_dotenv()
 
 st.title('Storyspire AI')
 
