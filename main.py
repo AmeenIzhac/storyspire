@@ -136,12 +136,12 @@ async def execute_all_guardrails(user_request):
             await asyncio.sleep(0.1)
 
 
-try:
-    loop = asyncio.get_event_loop()
-except RuntimeError as e:
-    if str(e) == 'There is no current event loop in thread %r.' % threading.current_thread().name:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
+# try:
+#     loop = asyncio.get_event_loop()
+# except RuntimeError as e:
+#     if str(e) == 'There is no current event loop in thread %r.' % threading.current_thread().name:
+#         loop = asyncio.new_event_loop()
+#         asyncio.set_event_loop(loop)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
