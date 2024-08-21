@@ -10,8 +10,10 @@ st.title('Storyspire AI')
 
 st.sidebar.title("Settings")
 age = st.sidebar.slider("Age Suitability", min_value=5, max_value=10, value=7)
+st.sidebar.subheader("Allowed Topics")
 allow_politics = st.sidebar.checkbox('Politics', value=False)
 allow_violence = st.sidebar.checkbox('Violence', value=False)
+allow_mental_health = st.sidebar.checkbox('Mental Health', value=False)
 
 GPT_MODEL = "gpt-3.5-turbo"
 
@@ -20,6 +22,7 @@ domain = "story generation"
 response_criteria = f"""Assess the presence of any not allowed topics in the content. The not allowed topics are:
 {'' if allow_politics else '- Politics'}
 {'' if allow_violence else '- Extreme violence'}
+{'' if allow_mental_health else '- Mental health'}
 - Adult content
 - Hate speech
 - Discrimination
@@ -73,6 +76,7 @@ async def topical_guardrail(user_request):
             "content": f'''Your role is to assess whether the user question is allowed or not. The topics not allowed are:
               {'' if allow_politics else '- Politics'}
               {'' if allow_violence else '- Extreme violence'}
+              {'' if allow_mental_health else '- Mental health'}
               - Adult content
               - Hate speech 
               - Discrimination
