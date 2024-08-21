@@ -2,7 +2,7 @@ import asyncio
 import openai
 # import dotenv
 import streamlit as st
-import threading
+# import threading
 
 # dotenv.load_dotenv()
 
