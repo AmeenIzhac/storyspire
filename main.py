@@ -2,36 +2,58 @@ import asyncio
 import openai
 # import dotenv
 import streamlit as st
-# import threading
 
 # dotenv.load_dotenv()
 
 st.title('Storyspire AI')
 
+topics = ["Guns", "Death", "Politics", "Violence", "Drugs"]
+ages = ["5", "6", "7", "8", "9", "10"]
+checkbox_values = {}
+
+for i in range(7):
+    cols = st.columns(6)
+    for j in range(6):
+        with cols[j]:
+            if i == 0 and j == 0:
+                st.text("Age / Topic")
+            elif i == 0:
+                st.text(topics[j-1])
+            elif j == 0:
+                st.text(ages[i-1])
+            else:
+                 checkbox_values[f"checkbox_{i}_{j}"] = st.checkbox("", key=f"checkbox_{i}_{j}")
+
 st.sidebar.title("Settings")
 age = st.sidebar.slider("Age Suitability", min_value=5, max_value=10, value=7)
 st.sidebar.subheader("Allowed Topics")
-allow_politics = st.sidebar.checkbox('Politics', value=False)
-allow_violence = st.sidebar.checkbox('Violence', value=False)
-allow_mental_health = st.sidebar.checkbox('Mental Health', value=False)
+# allow_politics = st.sidebar.checkbox('Politics', value=False)
+# allow_violence = st.sidebar.checkbox('Violence', value=False)
+# allow_mental_health = st.sidebar.checkbox('Mental Health', value=False)
+
+allow_guns = checkbox_values[f'''checkbox_{age-4}_1''']
+allow_death = checkbox_values[f'''checkbox_{age-4}_2''']
+allow_politics = checkbox_values[f'''checkbox_{age-4}_3''']
+allow_violence = checkbox_values[f'''checkbox_{age-4}_4''']
+allow_drugs = checkbox_values[f'''checkbox_{age-4}_5''']
+print(allow_guns, allow_death, allow_politics, allow_violence, allow_drugs)
 
 GPT_MODEL = "gpt-3.5-turbo"
 
 domain = "story generation"
 
 response_criteria = f"""Assess the presence of any not allowed topics in the content. The not allowed topics are:
+{'' if allow_guns else '- Guns'}
+{'' if allow_death else '- Death'}
 {'' if allow_politics else '- Politics'}
 {'' if allow_violence else '- Extreme violence'}
-{'' if allow_mental_health else '- Mental health'}
-- Adult content
-- Hate speech
-- Discrimination
-- Anything not suitable for children"""
+{'' if allow_drugs else '- Drugs'}
+"""
 
 response_safety_steps = """
 1. Read the content and the criteria carefully.
 2. Assess whether any not allowed topics are contained in the content.
-3. Assign a score from 1 to 5, with 1 being content is very safe and doesn't contain any not allowed topics, and 5 being the content definitely contains topics that are not allowed.
+3. Assign a score from 1 to 5, with 1 being content doesn't contain any not allowed topics, and 5 being the content definitely contains topics that are not allowed.
 """
 
 moderation_system_prompt = """
@@ -58,7 +80,7 @@ async def get_chat_response(user_request):
     print("Getting LLM response")
     messages = [
         {"role": "system", "content": "You write stories about the topic that is requested. Your response begins immediately with the story and ends with the story, i.e. there should be no other comentary such as 'Ok, here is a story' or 'I hope you like it' or 'I hope this helps'"},
-        {"role": "user", "content": user_request + f''' . The story must be suitable for a child aged {age}.'''},
+        {"role": "user", "content": user_request },
     ]
     response = openai.chat.completions.create(
         model=GPT_MODEL, messages=messages, temperature=0.5
@@ -74,14 +96,13 @@ async def topical_guardrail(user_request):
         {
             "role": "system",
             "content": f'''Your role is to assess whether the user question is allowed or not. The topics not allowed are:
-              {'' if allow_politics else '- Politics'}
-              {'' if allow_violence else '- Extreme violence'}
-              {'' if allow_mental_health else '- Mental health'}
-              - Adult content
-              - Hate speech 
-              - Discrimination
-              - Anything not suitable for children
+            {'' if allow_guns else ' - Guns'}
+            {'' if allow_death else ' - Death'}
+            {'' if allow_politics else ' - Politics'}
+            {'' if allow_violence else ' - Extreme violence'}
+            {'' if allow_drugs else ' - Drugs'}
             
+
             If the topic is allowed, say 'allowed' otherwise say 'not_allowed\'''',
         },
         {"role": "user", "content": user_request},
@@ -139,13 +160,6 @@ async def execute_all_guardrails(user_request):
         else:
             await asyncio.sleep(0.1)
 
-
-# try:
-#     loop = asyncio.get_event_loop()
-# except RuntimeError as e:
-#     if str(e) == 'There is no current event loop in thread %r.' % threading.current_thread().name:
-#         loop = asyncio.new_event_loop()
-#         asyncio.set_event_loop(loop)
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
